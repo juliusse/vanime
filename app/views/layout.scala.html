@@ -1,0 +1,49 @@
+@(title: String, metaDescription: Html = Html.apply(""))(content: Html)
+
+@import controllers.Application
+
+@menuItem(link: String, text: String) = {
+    <li @if(request.uri.contains(link)) {class="selected"}>
+        <a href="@link">@text</a>
+    </li>
+}
+
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>@title - Julius Seltenheim</title>
+		<meta name="Description" content="@metaDescription">
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")">
+		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+		<link rel="apple-touch-icon" sizes="114x114" href="@routes.Assets.at("images/favicon.png")">
+		
+		<script type="text/javascript" src='@routes.Assets.at("js/jquery.min.js")'></script>
+		<script type="text/javascript" src='@routes.Assets.at("js/timeline.js")'></script>
+		
+	</head>
+	<body>
+		<div class="pageContainer">
+			<div class="header"></div>
+			<div class="navbarTop">
+				<ul class="navigation-inline">
+
+				</ul>
+				
+				<div class="navbarTop-flags">
+				</div>
+			</div>
+		<h1>
+			 @title
+		</h1>
+		<div class="content">
+			@content
+		</div>
+		<div class="footer">
+			&copy; Julius Seltenheim 2013 | 
+		</div>
+		</div>
+	</body>
+</html>
+
