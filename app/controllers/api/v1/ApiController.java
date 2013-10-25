@@ -6,6 +6,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import services.converter.ConverterService;
 import services.converter.ConverterServiceImpl;
+import services.converter.ConverterSettings;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +19,9 @@ public class ApiController extends Controller {
         converterService = new ConverterServiceImpl();
     }
 
-    public Result convert(String number) {
+    public Result convert(String number, int minWordLength, int maxConnectedNumbers) {
         try {
-            final List<String> suggestions = converterService.convert(number);
+            final List<String> suggestions = converterService.convert(number, new ConverterSettings(minWordLength, maxConnectedNumbers));
 
             final JsonNode resultBody = new ObjectMapper().valueToTree(suggestions);
 

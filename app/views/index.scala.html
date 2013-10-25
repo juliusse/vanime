@@ -3,16 +3,52 @@
 @layout("Start Page") {
 
 <h2>Enter Your Number here:</h2>
-<input type="text" id="number" name="number" /><br />
+Minimal length of a word:
+<input type="number" name="minWordLength" id="minWordLength" value="3" /><br />
+Maximum digits in a row:
+<input type="number" name="maxDigitsInRow" id="maxDigitsInRow" value="5" /><br />
+Remove seperator characters:
+<input type="checkbox" id="removeSeperators" /><br />
+
+<input type="text" id="number" name="number" placeholder="Phone number" /><br />
 Results:<br />
 
 <div id="results">
 </div>
 
 <script type="text/javascript">
-    document.getElementById("number").onkeyup = function () {
-        var number = this.value;
-        if (number.length == 0) {
+    var numberInput = document.getElementById("number");
+    var wordInput = document.getElementById("minWordLength");
+    var digitInput = document.getElementById("maxDigitsInRow");
+    var removeSeperatorsInput = document.getElementById("removeSeperators");
+    var resultsDiv = document.getElementById("results");
+
+    var results = null;
+    var removeSeparators = false;
+
+    var fillResultsList = function () {
+        while (resultsDiv.hasChildNodes()) { resultsDiv.removeChild(resultsDiv.firstChild) }
+        if (results != null) {
+            resultsDiv.appendChild(document.createTextNode(results.length));
+            resultsDiv.appendChild(document.createElement("br"));
+
+            for (index in results) {
+                if (results.hasOwnProperty(index)) {
+                    var text = removeSeparators ? results[index].replace(/-/g, "") : results[index];
+                    resultsDiv.appendChild(document.createTextNode(text));
+                    resultsDiv.appendChild(document.createElement("br"));
+                }
+            }
+        }
+    }
+
+    var processing = function () {
+
+        var number = numberInput.value;
+        var wordLength = wordInput.value;
+        var digitsInRow = digitInput.value;
+
+        if (number.length == 0 || isNaN(wordLength) || isNaN(digitsInRow) || wordLength.length == 0 || digitsInRow.length == 0) {
             return false;
         }
 
@@ -20,31 +56,33 @@ Results:<br />
 
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
-                var resultsDiv = document.getElementById("results");
-                while (resultsDiv.hasChildNodes()) { resultsDiv.removeChild(resultsDiv.firstChild) }
-
                 if (request.status == 200) {
-                    var resultObj = JSON.parse(request.responseText);
+                    results = JSON.parse(request.responseText);
+                    fillResultsList();
 
-                    resultsDiv.appendChild(document.createTextNode(resultObj.length));
-                    resultsDiv.appendChild(document.createElement("br"));
-
-                    for (index in resultObj) {
-                        if (resultObj.hasOwnProperty(index)) {
-                            resultsDiv.appendChild(document.createTextNode(resultObj[index]));
-                            resultsDiv.appendChild(document.createElement("br"));
-                        }
-                    }
                 }
                 else if (request.status >= 400 && request.status < 500) {
+                    results = null;
+                    fillResultsList();
                     resultsDiv.appendChild(document.createTextNode(request.responseText));
                     resultsDiv.appendChild(document.createElement("br"));
                 }
             }
         }
 
-        request.open("GET", "/api/v1/convert/" + encodeURIComponent(number), true);
+        request.open("GET", "/api/v1/convert/" + encodeURIComponent(number) + "?minWordLength=" + wordLength + "&maxConnectedDigits=" + digitsInRow, true);
         request.send();
-    }
+    };
+
+
+
+    document.getElementById("number").onkeyup = processing;
+    document.getElementById("minWordLength").oninput = processing;
+    document.getElementById("maxDigitsInRow").oninput = processing;
+    document.getElementById("removeSeperators").onchange = function () {
+        removeSeparators = removeSeperatorsInput.checked;
+        fillResultsList();
+    };
+
 </script>
 }

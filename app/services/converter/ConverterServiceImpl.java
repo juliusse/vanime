@@ -13,29 +13,35 @@ import play.Play;
 
 public class ConverterServiceImpl implements ConverterService {
 
-    private List<String> wordList = null;
+    private List<String> enList = null;
+    private List<String> deList = null;
 
     public ConverterServiceImpl() {
 
-        wordList = new ArrayList<String>();
+        enList = new ArrayList<String>();
+        deList = new ArrayList<String>();
         try {
             final String words = IOUtils.toString(Play.application().resourceAsStream("en.dict")).toLowerCase();
             final String[] wordsArray = words.split("\r\n");
-            wordList = Arrays.asList(wordsArray);
+            enList = Arrays.asList(wordsArray);
+
+            final String wordsDe = IOUtils.toString(Play.application().resourceAsStream("de.dict")).toLowerCase();
+            final String[] wordsArrayDe = wordsDe.split("\r\n");
+            deList = Arrays.asList(wordsArrayDe);
         } catch (IOException e) {
         }
     }
 
     @Override
-    public List<String> convert(String number) throws IllegalArgumentException {
-        number = replaceLeadingPlus(number);
-        number = replaceSpacings(number);
+    public List<String> convert(String number, ConverterSettings settings) throws IllegalArgumentException {
+        String convertedNumber = replaceLeadingPlus(number);
+        convertedNumber = replaceSpacings(convertedNumber);
 
-        if (!containsOnlyDigits(number)) {
+        if (!containsOnlyDigits(convertedNumber)) {
             throw new IllegalArgumentException("Input should only contain digits");
         }
 
-        List<String> allCombinations = generateCombinations(number);
+        List<String> allCombinations = generateCombinations(convertedNumber, settings);
 
         return allCombinations;
     }
@@ -52,81 +58,109 @@ public class ConverterServiceImpl implements ConverterService {
         return NumberUtils.isDigits(number);
     }
 
-    private List<String> generateCombinations(String number) {
+    private List<String> generateCombinations(String number, ConverterSettings settings) {
 
+        final List<String> dict = enList;
         final int currentDigit = Integer.parseInt(number.charAt(0) + "");
         final String numbersLeftNow = number.substring(1);
 
         final List<String> combinations = new ArrayList<>();
-        if (currentDigit < 2) {
-            combinations.addAll(generateCombinations(numbersLeftNow, Arrays.asList(new String[] { "-" + currentDigit + "-" })));
-        } else {
+        final List<String> startList = new ArrayList<>();
+        startList.add(currentDigit + "");
+        if (currentDigit > 1) {
             final String[] possibleCharacters = numberToPossibleCharacters(currentDigit);
-            combinations.addAll(generateCombinations(numbersLeftNow, Arrays.asList(possibleCharacters)));
+            startList.addAll(Arrays.asList(possibleCharacters));
+
         }
 
-//        Iterator<String> it = combinations.iterator();
-//        while (it.hasNext()) {
-//            final String value = it.next();
-//            final String lastPart = getLastPartOfCombination(value);
-//            if (!isAWord(lastPart, 3)) {
-//                it.remove();
-//            }
-//        }
+        combinations.addAll(generateCombinations(numbersLeftNow, startList, dict, settings));
+
+        Iterator<String> it = combinations.iterator();
+        while (it.hasNext()) {
+            final String value = it.next();
+            final String lastPart = getLastPartOfCombination(value);
+            final char lastCharacter = value.charAt(value.length() - 1);
+            if (!isWord(lastPart, settings.getMinLengthOfWords(), dict) && !NumberUtils.isDigits(lastCharacter + "") || NumberUtils.isDigits(value)
+                    || lentghOfLongestSeriesOfNumbers(value) > settings.getMaxSeriesOfDigits()) {
+                it.remove();
+            }
+        }
 
         return combinations;
 
     }
 
-    private List<String> generateCombinations(String numbersLeft, List<String> existingCombinations) {
+    private List<String> generateCombinations(String numbersLeft, List<String> existingCombinations, List<String> dict, ConverterSettings settings) {
         if (numbersLeft.length() == 0) {
             return existingCombinations;
         }
 
+        final List<String> listWithFinishedWordsAtEnd = lookForFinishedWords(existingCombinations, settings.getMinLengthOfWords(), dict);
         final List<String> possibleCombinations = new ArrayList<String>();
 
         final int currentDigit = Integer.parseInt(numbersLeft.charAt(0) + "");
         final String numbersLeftNow = numbersLeft.substring(1);
 
-        final String[] possibleCharacters = numberToPossibleCharacters(currentDigit);
+        possibleCombinations.addAll(appendAsDigit(listWithFinishedWordsAtEnd, currentDigit));
 
-        possibleCombinations.addAll(appendAsDigit(existingCombinations, currentDigit));
+        possibleCombinations.addAll(appendAsCharacter(listWithFinishedWordsAtEnd, currentDigit, settings.getMinLengthOfWords(), dict));
 
-        for (String existing : existingCombinations) {
-            for (String character : possibleCharacters) {
-                final String newCombination = existing + character;
-                final String lastPart = getLastPartOfCombination(newCombination);
+        return generateCombinations(numbersLeftNow, possibleCombinations, dict, settings);
+    }
 
-                if (isAWord(lastPart, 3)) {
-                    possibleCombinations.add(newCombination + "-");
-                }
-                if (isBeginningOfAWord(lastPart)) {
-                    possibleCombinations.add(newCombination);
+    private List<String> lookForFinishedWords(List<String> currentList, int minWordLength, List<String> dict) {
+        final List<String> possibleCombinations = new ArrayList<String>();
+
+        for (String value : currentList) {
+            final char lastCharacter = value.charAt(value.length() - 1);
+            final String lastPart = getLastPartOfCombination(value);
+
+            if (NumberUtils.isDigits("" + lastCharacter)) {
+                possibleCombinations.add(value + "-");
+            } else {
+                possibleCombinations.add(value);
+                if (isWord(lastPart, minWordLength, dict)) {
+                    possibleCombinations.add(value + "-");
                 }
             }
         }
 
-        return generateCombinations(numbersLeftNow, possibleCombinations);
+        return possibleCombinations;
     }
 
     private List<String> appendAsDigit(List<String> currentPossibilities, int currentDigit) {
         final List<String> possibleCombinations = new ArrayList<String>();
 
-        final String appendPart = "-" + currentDigit + "-";
         // look if current solutions make sense
         for (String combination : currentPossibilities) {
-            final String lastPart = getLastPartOfCombination(combination);
+            char lastCharacter = combination.charAt(combination.length() - 1);
 
-            // no last part
-            if (lastPart.length() == 0) {
+            if (lastCharacter == '-') {
                 char foreLastCharacter = combination.charAt(combination.length() - 2);
                 if (NumberUtils.isDigits(foreLastCharacter + "")) {
-                    possibleCombinations.add(combination.substring(0, combination.length() - 1) + currentDigit + "-");
+                    possibleCombinations.add(combination.substring(0, combination.length() - 1) + currentDigit);
                 } else {
-                    possibleCombinations.add(combination + currentDigit + "-");
+                    possibleCombinations.add(combination + currentDigit);
                 }
-            } else if (isAWord(lastPart, 3)) {
-                possibleCombinations.add(combination + appendPart);
+            }
+
+        }
+
+        return possibleCombinations;
+    }
+
+    private List<String> appendAsCharacter(List<String> currentList, int digit, int minWordLength, List<String> dict) {
+        final List<String> possibleCombinations = new ArrayList<String>();
+        final String[] possibleCharacters = numberToPossibleCharacters(digit);
+
+        for (String existing : currentList) {
+            for (String character : possibleCharacters) {
+                final String newCombination = existing + character;
+                final String lastPart = getLastPartOfCombination(newCombination);
+
+                if (isBeginningOfAWord(lastPart, dict) || isWord(lastPart, minWordLength, dict)) {
+                    possibleCombinations.add(newCombination);
+                }
             }
         }
 
@@ -160,19 +194,19 @@ public class ConverterServiceImpl implements ConverterService {
         }
     }
 
-    private boolean isBeginningOfAWord(String part) {
-        for (String word : wordList) {
+    private boolean isBeginningOfAWord(String part, List<String> dict) {
+        for (String word : dict) {
             if (word.startsWith(part) && !word.equals(part))
                 return true;
         }
         return false;
     }
 
-    private boolean isAWord(String part, int minLength) {
+    private boolean isWord(String part, int minLength, List<String> dict) {
         if (part.length() < minLength) {
             return false;
         }
-        for (String word : wordList) {
+        for (String word : dict) {
             if (word.equals(part))
                 return true;
         }
@@ -186,5 +220,16 @@ public class ConverterServiceImpl implements ConverterService {
         } else {
             return combination;
         }
+    }
+
+    private int lentghOfLongestSeriesOfNumbers(String combination) {
+        int longest = 0;
+        String[] parts = combination.split("-");
+        for (String part : parts) {
+            if (NumberUtils.isDigits(part) && part.length() > longest) {
+                longest = part.length();
+            }
+        }
+        return longest;
     }
 }
