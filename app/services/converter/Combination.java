@@ -107,12 +107,8 @@ public class Combination {
     }
 
     private boolean isWord(String part) {
-        if (part.startsWith("reces2")) {
-            int i = 1;
-        }
         String partToTest = part.replaceAll("\\d", "");
         if (partToTest.length() < settings.getMinLengthOfWords()) {
-            System.out.println(part + "; " + partToTest + "; " + settings.getMinLengthOfWords());
             return false;
         }
 

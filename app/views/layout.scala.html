@@ -13,36 +13,42 @@
 
 <html>
 	<head>
-		<title>@title - Julius Seltenheim</title>
+		<title>@title - Vanime</title>
 		<meta name="Description" content="@metaDescription">
-		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")">
-		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-		<link rel="apple-touch-icon" sizes="114x114" href="@routes.Assets.at("images/favicon.png")">
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("css/bootstrap.min.css")">
 		
-		<script type="text/javascript" src='@routes.Assets.at("js/jquery.min.js")'></script>
-		<script type="text/javascript" src='@routes.Assets.at("js/timeline.js")'></script>
+		<script type="text/javascript" src='@routes.Assets.at("js/vanime.js")'></script>
 		
 	</head>
 	<body>
-		<div class="pageContainer">
-			<div class="header"></div>
-			<div class="navbarTop">
-				<ul class="navigation-inline">
 
-				</ul>
+		<div class="container">
+			<div class="row">
+                <div class="col-md-2"> </div>
+                <div class="col-md-6">
+                    <div class="well">
+                        <h1>Vanime <small>- What does your number say?</small></h1>
+                    </div>
+                
+                
+
+			        <div class="navbarTop">
+				        <ul class="navigation-inline">
+
+				        </ul>
 				
-				<div class="navbarTop-flags">
-				</div>
-			</div>
-		<h1>
-			 @title
-		</h1>
-		<div class="content">
-			@content
-		</div>
-		<div class="footer">
-			&copy; Julius Seltenheim 2013 | 
-		</div>
+				        <div class="navbarTop-flags">
+				        </div>
+			        </div>
+
+		        <div class="content">
+			        @content
+		        </div>
+		        <div class="footer">
+			        &copy; Julius Seltenheim 2013 | 
+                    </div>
+		        </div>
+            </div>
 		</div>
 	</body>
 </html>

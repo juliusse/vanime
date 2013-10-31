@@ -3,86 +3,57 @@
 @layout("Start Page") {
 
 <h2>Enter Your Number here:</h2>
-Minimal length of a word:
-<input type="number" name="minWordLength" id="minWordLength" value="3" /><br />
-Maximum digits in a row:
-<input type="number" name="maxDigitsInRow" id="maxDigitsInRow" value="5" /><br />
-Remove seperator characters:
-<input type="checkbox" id="removeSeperators" /><br />
+<form class="form-horizontal" role="form" id="searchForm">
+    <div class="row">
+        <div class="form-group">
+            <label class="sr-only" for="number">Your Number</label>
+            <div class="col-md-9">
+                <input class="form-control" type="text" id="number" name="number" placeholder="Your Number" />
+            </div>
+            <div class="col-md-3">
+                <input class="form-control" type="button" id="submit" value="Search" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-6">
+            <div class="col-md-8">
+                <label for="minWordLength">Minimal length of a word:</label>
+            </div>
+            <div class="col-md-4">
+                <input class="form-control" type="number" name="minWordLength" id="minWordLength" value="3" />
+            </div>
+        </div>
 
-<input type="text" id="number" name="number" placeholder="Phone number" /><br />
-Results:<br />
+        <div class="form-group col-md-6">
+            <div class="col-md-8">
+                <label for="maxDigitsInRow">Maximum digits in a row:</label>
+            </div>
+            <div class="col-md-4">
+                <input class="form-control" type="number" name="maxDigitsInRow" id="maxDigitsInRow" value="5" />
+            </div>
+        </div>
 
-<div id="results">
+        <div class="form-group col-md-6">
+            <div class="col-md-8">
+                <label for="removeSeperators">
+                    Remove seperator characters:
+                </label>
+            </div>
+            <input type="checkbox" id="removeSeperators" />
+
+        </div>
+
+    </div>
+
+
+
+    <br />
+</form>
+<h3>Results:</h3>
+<small>Count: <span id="count"></span></small>
+<div class="well" id="results">
 </div>
 
-<script type="text/javascript">
-    var numberInput = document.getElementById("number");
-    var wordInput = document.getElementById("minWordLength");
-    var digitInput = document.getElementById("maxDigitsInRow");
-    var removeSeperatorsInput = document.getElementById("removeSeperators");
-    var resultsDiv = document.getElementById("results");
 
-    var results = null;
-    var removeSeparators = false;
-
-    var fillResultsList = function () {
-        while (resultsDiv.hasChildNodes()) { resultsDiv.removeChild(resultsDiv.firstChild) }
-        if (results != null) {
-            resultsDiv.appendChild(document.createTextNode(results.length));
-            resultsDiv.appendChild(document.createElement("br"));
-
-            for (index in results) {
-                if (results.hasOwnProperty(index)) {
-                    var text = removeSeparators ? results[index].replace(/-/g, "") : results[index];
-                    resultsDiv.appendChild(document.createTextNode(text));
-                    resultsDiv.appendChild(document.createElement("br"));
-                }
-            }
-        }
-    }
-
-    var processing = function () {
-
-        var number = numberInput.value;
-        var wordLength = wordInput.value;
-        var digitsInRow = digitInput.value;
-
-        if (number.length == 0 || isNaN(wordLength) || isNaN(digitsInRow) || wordLength.length == 0 || digitsInRow.length == 0) {
-            return false;
-        }
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function () {
-            if (request.readyState == 4) {
-                if (request.status == 200) {
-                    results = JSON.parse(request.responseText);
-                    fillResultsList();
-
-                }
-                else if (request.status >= 400 && request.status < 500) {
-                    results = null;
-                    fillResultsList();
-                    resultsDiv.appendChild(document.createTextNode(request.responseText));
-                    resultsDiv.appendChild(document.createElement("br"));
-                }
-            }
-        }
-
-        request.open("GET", "/api/v1/convert/" + encodeURIComponent(number) + "?minWordLength=" + wordLength + "&maxConnectedDigits=" + digitsInRow, true);
-        request.send();
-    };
-
-
-
-    document.getElementById("number").onkeyup = processing;
-    document.getElementById("minWordLength").oninput = processing;
-    document.getElementById("maxDigitsInRow").oninput = processing;
-    document.getElementById("removeSeperators").onchange = function () {
-        removeSeparators = removeSeperatorsInput.checked;
-        fillResultsList();
-    };
-
-</script>
 }
