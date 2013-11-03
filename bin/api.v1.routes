@@ -1,1 +1,0 @@
-GET	/convert/:number		@controllers.api.v1.ApiController.convert(number: String, minWordLength :Integer ?= 3, maxConnectedDigits: Integer ?= 5)

@@ -44,7 +44,7 @@ public class CombinationTests {
         assertThat(results.size()).isEqualTo(5);
 
         // test combination with start of word
-        final Combination combination2 = new Combination(dict, new ArrayList<String>(), "ap", settings);
+//        final Combination combination2 = new Combination(dict, new ArrayList<String>(), "ap", settings);
 
         // 3 - d, e, f
 //        results = combination2.addDigit(3);
