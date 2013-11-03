@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -14,7 +13,7 @@ import play.Play;
 
 public class ConverterServiceImpl implements ConverterService {
 
-//    private final Set<String> dict;
+    // private final Set<String> dict;
     private List<String> enList = null;
     private List<String> deList = null;
 
@@ -70,7 +69,7 @@ public class ConverterServiceImpl implements ConverterService {
 
         for (char c : number.toCharArray()) {
             final int digit = Integer.parseInt(c + "");
-            final List<Combination> newCombiniations = new ArrayList<>();
+            final List<Combination> newCombiniations = new ArrayList<Combination>();
 
             for (Combination combination : combinations) {
                 newCombiniations.addAll(combination.addDigit(digit));
@@ -78,7 +77,7 @@ public class ConverterServiceImpl implements ConverterService {
             combinations = newCombiniations;
         }
 
-        final List<String> postProcessedList = new ArrayList<>();
+        final List<String> postProcessedList = new ArrayList<String>();
         for (Combination combination : combinations) {
             if (combination.getCurrentPart().isEmpty() || combination.isCurrentPartNumeric()) {
                 postProcessedList.add(combination.toString());

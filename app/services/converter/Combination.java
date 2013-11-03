@@ -16,7 +16,7 @@ public class Combination {
 
     public Combination(List<String> dict, ConverterSettings settings) {
         this.dict = dict;
-        parts = new ArrayList<>();
+        parts = new ArrayList<String>();
         currentPart = "";
         this.settings = settings;
         isCurrentPartNumeric = true;
@@ -46,7 +46,7 @@ public class Combination {
     }
 
     public List<Combination> addDigit(int digit) {
-        final List<Combination> newCombinations = new ArrayList<>();
+        final List<Combination> newCombinations = new ArrayList<Combination>();
 
         final String[] possibleCharacters = numberToPossibleCharacters(digit);
 
