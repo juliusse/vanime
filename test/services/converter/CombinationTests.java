@@ -28,9 +28,9 @@ public class CombinationTests {
         // test empty combination new digit
         final Combination emptyCombination = new Combination(dict, settings);
 
-        // 2 - a,b,c
+        // 2 - 2,a,b,c,2s
         List<Combination> results = emptyCombination.addDigit(2);
-        assertThat(results.size()).isEqualTo(4);
+        assertThat(results.size()).isEqualTo(5);
 
         // 0 - o, 0
         results = emptyCombination.addDigit(0);
@@ -39,9 +39,9 @@ public class CombinationTests {
         // test with a numeric current part
         final Combination combination = new Combination(dict, new ArrayList<String>(), "012", settings);
 
-        // 4 - GHI
+        // 4 - GHI 4a
         results = combination.addDigit(4);
-        assertThat(results.size()).isEqualTo(4);
+        assertThat(results.size()).isEqualTo(5);
 
         // test combination with start of word
         final Combination combination2 = new Combination(dict, new ArrayList<String>(), "ap", settings);
@@ -65,13 +65,13 @@ public class CombinationTests {
 
         // test combination with numbers in word
         final Combination combination3 = new Combination(dict, new ArrayList<String>(), "p0o0o", settings);
-
+        
         // estimated result with pool
         results = combination3.addDigit(5);
 
         Combination combinationWithPool = null;
         for (Combination c : results) {
-            if (c.getParts().size() == 1 && c.getParts().get(0).equals("p0o0ol") && c.getCurrentPart().isEmpty()) {
+            if (c.getParts().size() == 1 && c.getParts().get(0).equals("p00l") && c.getCurrentPart().isEmpty()) {
                 assertThat(combinationWithPool).isNull();
                 combinationWithPool = c;
             }
